@@ -10,6 +10,17 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 2% 3%;
+  position: relative;
+}
+
+/* === Logo === */
+#logo {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  border-radius: 10px;
+  object-fit: cover;
+  z-index: 1000;
 }
 
 /* === Screens === */
