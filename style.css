@@ -1,0 +1,432 @@
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2% 3%;
+}
+
+/* === Screens === */
+.screen { width: 100%; }
+.hidden { display: none !important; }
+
+/* === Setup Screen === */
+#setup-screen h1 {
+  font-size: clamp(2rem, 4vw, 4rem);
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+
+.setup-section {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.setup-section h2 {
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+  margin-bottom: 1rem;
+  color: #e0e0e0;
+}
+
+/* --- Participant input row --- */
+.input-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.input-row input {
+  flex: 1;
+  font-size: 1.25rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid #334;
+  border-radius: 8px;
+  background: #0f3460;
+  color: #fff;
+  outline: none;
+}
+.input-row input:focus { border-color: #e94560; }
+
+.input-row button,
+#start-btn {
+  font-size: 1.25rem;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.input-row button {
+  background: #e94560;
+  color: #fff;
+}
+.input-row button:hover { background: #c73650; }
+
+/* --- Participant list --- */
+#participant-list {
+  list-style: none;
+  counter-reset: participant;
+}
+
+#participant-list li {
+  counter-increment: participant;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0f3460;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+#participant-list li::before {
+  content: counter(participant) ".";
+  font-weight: 700;
+  min-width: 2ch;
+  color: #e94560;
+}
+
+#participant-list li .name { flex: 1; }
+
+#participant-list li button {
+  background: transparent;
+  border: 1px solid #556;
+  color: #ccc;
+  border-radius: 6px;
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#participant-list li button:hover { background: #334; }
+#participant-list li button.edit-btn { color: #ffc107; border-color: #ffc107; }
+#participant-list li button.edit-btn:hover { background: #ffc10722; }
+#participant-list li button.save-btn { color: #4caf50; border-color: #4caf50; }
+#participant-list li button.save-btn:hover { background: #4caf5022; }
+#participant-list li button.remove-btn { color: #e94560; border-color: #e94560; }
+#participant-list li button.remove-btn:hover { background: #e9456022; }
+
+/* --- Inline edit input --- */
+#participant-list li .edit-input {
+  flex: 1;
+  font-size: 1.15rem;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid #ffc107;
+  border-radius: 6px;
+  background: #0f3460;
+  color: #fff;
+  outline: none;
+}
+#participant-list li .edit-input:focus { border-color: #ffc107; }
+
+/* --- Team actions row --- */
+.team-actions-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* --- Randomize Teams button --- */
+#randomize-btn {
+  flex: 1;
+  padding: 0.7rem 1.4rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: 2px solid #e94560;
+  border-radius: 8px;
+  background: transparent;
+  color: #e94560;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+#randomize-btn:hover:not(:disabled) { background: #e9456022; }
+#randomize-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* --- Download / Upload Teams buttons --- */
+#download-teams-btn,
+#upload-teams-btn {
+  padding: 0.7rem 1.4rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  background: transparent;
+  color: #4caf50;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+#download-teams-btn:hover,
+#upload-teams-btn:hover { background: #4caf5022; }
+#download-teams-btn.hidden { display: none !important; }
+
+/* --- Team preview --- */
+.team-preview {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+.team-preview.hidden { display: none !important; }
+
+.team-column {
+  flex: 1;
+  background: #0f3460;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.team-column h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #e94560;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.team-column ol {
+  list-style: decimal inside;
+  font-size: 1.05rem;
+  color: #ddd;
+}
+.team-column ol li {
+  padding: 0.2rem 0;
+}
+
+/* --- Speaker team label (countdown) --- */
+.speaker-team {
+  font-size: clamp(1.1rem, 2vw, 2.2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #e94560;
+  margin-bottom: 0.25rem;
+}
+
+/* --- Time inputs --- */
+.time-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.time-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.time-row input {
+  width: 5rem;
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  border: 2px solid #334;
+  border-radius: 8px;
+  background: #0f3460;
+  color: #fff;
+  outline: none;
+}
+.time-row input:focus { border-color: #e94560; }
+
+/* --- Start button --- */
+#start-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.6rem;
+  background: #e94560;
+  color: #fff;
+  margin-top: 0.5rem;
+  transition: opacity 0.2s;
+}
+#start-btn:hover:not(:disabled) { background: #c73650; }
+#start-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* === Countdown Screen === */
+#countdown-screen {
+  max-width: 100%;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+  transition: background-color 1s ease;
+  z-index: 10;
+}
+#countdown-screen.hidden { display: none !important; }
+
+#countdown-screen.warning {
+  background-color: #b71c1c;
+}
+
+.countdown-container {
+  text-align: center;
+  padding: 2rem;
+  width: 100%;
+}
+
+.speaker-label {
+  font-size: clamp(1.2rem, 2vw, 2.5rem);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.speaker-name {
+  font-size: clamp(3rem, 8vw, 10rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.timer-display {
+  font-size: clamp(5rem, 15vw, 20rem);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.speaker-progress {
+  font-size: clamp(1.1rem, 1.8vw, 2rem);
+  color: #aaa;
+  margin-bottom: 0.75rem;
+}
+
+.next-up-text {
+  font-size: clamp(1.2rem, 2vw, 2.2rem);
+  color: #999;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.countdown-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pause-btn {
+  font-size: clamp(1.2rem, 1.8vw, 2rem);
+  padding: 0.8rem 2.5rem;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  background: transparent;
+  color: #fff;
+  transition: background 0.2s, border-color 0.2s;
+}
+.pause-btn:hover { background: rgba(255,255,255,0.1); }
+
+.skip-btn {
+  font-size: clamp(1.2rem, 1.8vw, 2rem);
+  padding: 0.8rem 2.5rem;
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  background: transparent;
+  color: #ffc107;
+  transition: background 0.2s, border-color 0.2s;
+}
+.skip-btn:hover { background: rgba(255,193,7,0.1); }
+
+.countdown-btn {
+  font-size: clamp(1.4rem, 2.2vw, 2.5rem);
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  background: #e94560;
+  color: #fff;
+  transition: background 0.2s;
+}
+.countdown-btn:hover { background: #c73650; }
+
+/* --- Countdown Restart button (back to setup) --- */
+.countdown-restart-wrapper {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.countdown-restart-btn {
+  font-size: 0.95rem;
+  padding: 0.5rem 1.4rem;
+  border: 1px solid #666;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  background: transparent;
+  color: #888;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.countdown-restart-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #bbb;
+  border-color: #999;
+}
+
+/* === End Screen === */
+#end-screen {
+  max-width: 100%;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+  z-index: 10;
+}
+#end-screen.hidden { display: none !important; }
+
+.end-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+.end-title {
+  font-size: clamp(3rem, 8vw, 10rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.end-subtitle {
+  font-size: clamp(1.4rem, 3vw, 3rem);
+  color: #aaa;
+  margin-bottom: 3rem;
+}
+
+/* === Responsive === */
+@media (max-width: 500px) {
+  body { padding: 1rem; }
+  .setup-section { padding: 1rem; }
+  .time-row { flex-direction: column; gap: 0.75rem; }
+}
+

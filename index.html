@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debate Timer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Setup Screen -->
+  <div id="setup-screen" class="screen">
+    <h1>Debate Timer</h1>
+
+    <!-- Participant Entry -->
+    <section class="setup-section">
+      <h2>Participants</h2>
+      <div class="input-row">
+        <input
+          type="text"
+          id="participant-input"
+          placeholder="Enter participant name"
+          autocomplete="off"
+          aria-label="Participant name"
+        >
+        <button id="add-btn" type="button">Add</button>
+      </div>
+      <ol id="participant-list" aria-label="Participant list"></ol>
+      <div class="team-actions-row">
+        <button id="randomize-btn" type="button" disabled>Randomize Teams</button>
+        <button id="download-teams-btn" type="button" class="hidden">Download Teams</button>
+        <button id="upload-teams-btn" type="button">Upload Teams</button>
+        <input type="file" id="upload-teams-input" accept=".txt" class="hidden">
+      </div>
+      <div id="team-preview" class="team-preview hidden" aria-label="Team assignments"></div>
+    </section>
+
+    <!-- Speaking Time -->
+    <section class="setup-section">
+      <h2>Speaking Time</h2>
+      <div class="time-row">
+        <label>
+          <input type="number" id="time-minutes" min="0" max="99" value="5" aria-label="Minutes">
+          <span>min</span>
+        </label>
+        <label>
+          <input type="number" id="time-seconds" min="0" max="59" value="0" aria-label="Seconds">
+          <span>sec</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Start Button -->
+    <button id="start-btn" type="button" disabled>Start Debate</button>
+  </div>
+
+  <!-- Countdown Screen -->
+  <div id="countdown-screen" class="screen hidden">
+    <div class="countdown-container">
+      <div class="speaker-label">Speaker</div>
+      <div id="speaker-team" class="speaker-team"></div>
+      <div id="speaker-name" class="speaker-name"></div>
+      <div id="timer-display" class="timer-display">00:00</div>
+      <div class="speaker-progress">
+        <span id="speaker-progress-text"></span>
+      </div>
+      <div id="next-up-text" class="next-up-text"></div>
+      <div class="countdown-actions">
+        <button id="pause-btn" type="button" class="pause-btn">Pause</button>
+        <button id="skip-btn" type="button" class="skip-btn">Skip</button>
+        <button id="next-btn" type="button" class="countdown-btn hidden">Next Speaker</button>
+      </div>
+      <div class="countdown-restart-wrapper">
+        <button id="countdown-restart-btn" type="button" class="countdown-restart-btn">↩ Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Screen -->
+  <div id="end-screen" class="screen hidden">
+    <div class="end-container">
+      <h1 class="end-title">Debate Over</h1>
+      <p class="end-subtitle">All participants have spoken.</p>
+      <button id="restart-btn" type="button" class="countdown-btn">Restart</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
