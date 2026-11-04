@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debate Groups – AI Ethics and Legislation</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { margin-bottom: .25rem; }
+  .controls { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; margin: 1.5rem 0; }
+  button { padding: .5rem 1rem; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font-size: 1rem; cursor: pointer; }
+  button:disabled { background: #9ca3af; cursor: not-allowed; }
+  button.secondary { background: #4b5563; }
+  #groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .group { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem; }
+  .group h2 { margin: 0 0 .5rem; font-size: 1.1rem; color: #2563eb; }
+  .group ol { margin: 0; padding-left: 1.4rem; }
+  #pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; border-top: 1px solid #d1d5db; }
+  @media (max-width: 700px) { #pickers { grid-template-columns: 1fr; } }
+  .picker { padding-top: 1rem; }
+  #timer-section { margin-top: 2rem; border-top: 1px solid #d1d5db; padding-top: 1rem; }
+  .group-list li { padding: .25rem .5rem; border-radius: 4px; }
+  .group-list li.used { background: #fde68a; }
+  .group-list li.current { background: #f59e0b; font-weight: bold; }
+  #timer { font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace; font-size: 4rem; font-weight: bold; letter-spacing: .05em; display: inline-block; padding: .2em .5em; margin: .5rem 0; border-radius: 16px; color: #22d3ee; background: linear-gradient(145deg, #0f172a, #1e1b4b); border: 3px solid #6366f1; box-shadow: 0 0 20px rgba(99,102,241,.6), inset 0 0 20px rgba(34,211,238,.15); text-shadow: 0 0 12px rgba(34,211,238,.8); transition: color .3s, border-color .3s, box-shadow .3s; }
+  #timer-section.running #timer { color: #4ade80; border-color: #22c55e; text-shadow: 0 0 12px rgba(74,222,128,.8); box-shadow: 0 0 24px rgba(34,197,94,.6), inset 0 0 20px rgba(74,222,128,.15); }
+  @keyframes blink { 50% { opacity: .45; } }
+  #timer-section:fullscreen { background: radial-gradient(circle at center, #1e293b, #020617); color: #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; padding: 2rem; border: 0; width: 100%; height: 100%; box-sizing: border-box; }
+  #timer-section:fullscreen #timer { font-size: 28vw; line-height: 1; }
+  #timer-section:fullscreen button { font-size: 2rem; padding: 1rem 2rem; }
+  #timer-section:fullscreen h2 { display: none; }
+  #timer.done { color: #f87171; border-color: #ef4444; text-shadow: 0 0 14px rgba(248,113,113,.9); box-shadow: 0 0 28px rgba(239,68,68,.7); animation: blink 1s step-end infinite; }
+  #timer-section #timer.warning { color: #fff; background: #dc2626; border-color: #fca5a5; text-shadow: 0 0 10px rgba(255,255,255,.6); box-shadow: 0 0 28px rgba(220,38,38,.8); }
+  #timer-section.running #t-start { background: #4b5563; }
+  #timer-section.running #t-stop { background: #2563eb; }
+  button.preset.active { background: #2563eb; }
+  .picked-text { font-size: 1.3rem; font-weight: bold; }
+  #status { color: #555; }
+  #error { color: #b91c1c; }
+</style>
+</head>
+<body>
+<h1>Debate on AI Ethics and Legislation</h1>
+<p>Load a .txt file with one participant name per line and randomly split them into 5 groups.</p>
+
+<div class="controls">
+  <input type="file" id="file" accept=".txt,text/plain">
+  <button id="shuffle" disabled>Shuffle groups</button>
+  <button id="download" class="secondary" disabled>Download result</button>
+</div>
+<p id="status"></p>
+<p id="error"></p>
+<div id="groups"></div>
+
+<div id="pickers">
+<section class="picker">
+  <h2>Who presents their project?</h2>
+  <ul class="group-list"></ul>
+  <button class="pick">Pick the next group</button>
+  <p class="picked-text" aria-live="polite"></p>
+</section>
+
+<section class="picker">
+  <h2>Who audits the presentation?</h2>
+  <ul class="group-list"></ul>
+  <button class="pick">Pick the next group</button>
+  <p class="picked-text" aria-live="polite"></p>
+</section>
+</div>
+<button id="reset-picks" class="secondary">Reset and reshuffle group selections</button>
+
+<section id="timer-section">
+  <h2>Countdown timer</h2>
+  <div class="controls">
+    <button class="preset secondary" data-min="10">10 min</button>
+    <button class="preset secondary" data-min="7">7 min</button>
+    <button class="preset secondary" data-min="3">3 min</button>
+  </div>
+  <div id="timer" aria-live="off">10:00</div>
+  <div class="controls">
+    <button id="t-start">Start</button>
+    <button id="t-stop" class="secondary">Stop</button>
+    <button id="t-reset" class="secondary">Reset</button>
+    <button id="t-full" class="secondary">Full screen</button>
+  </div>
+</section>
+
+<script>
+const GROUP_COUNT = 5;
+let names = [];
+let groups = [];
+
+const fileInput = document.getElementById('file');
+const shuffleBtn = document.getElementById('shuffle');
+const downloadBtn = document.getElementById('download');
+const statusEl = document.getElementById('status');
+const errorEl = document.getElementById('error');
+const groupsEl = document.getElementById('groups');
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    const j = buf[0] % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function assign() {
+  groups = Array.from({ length: GROUP_COUNT }, () => []);
+  shuffle(names).forEach((n, i) => groups[i % GROUP_COUNT].push(n));
+  resetPickerAssignments();
+  render();
+}
+
+function render() {
+  groupsEl.textContent = '';
+  groups.forEach((members, i) => {
+    const box = document.createElement('div');
+    box.className = 'group';
+    const h = document.createElement('h2');
+    h.textContent = `Group ${i + 1} (${members.length})`;
+    const ol = document.createElement('ol');
+    members.forEach(m => {
+      const li = document.createElement('li');
+      li.textContent = m;
+      ol.appendChild(li);
+    });
+    box.append(h, ol);
+    groupsEl.appendChild(box);
+  });
+  downloadBtn.disabled = false;
+}
+
+fileInput.addEventListener('change', async () => {
+  errorEl.textContent = '';
+  const file = fileInput.files[0];
+  if (!file) return;
+  const text = await file.text();
+  names = [...new Set(text.split(/\r?\n/).map(l => l.trim()).filter(Boolean))];
+  if (names.length < GROUP_COUNT) {
+    errorEl.textContent = `Need at least ${GROUP_COUNT} names (found ${names.length}).`;
+    shuffleBtn.disabled = downloadBtn.disabled = true;
+    groupsEl.textContent = '';
+    return;
+  }
+  statusEl.textContent = `${names.length} participants loaded.`;
+  shuffleBtn.disabled = false;
+  assign();
+});
+
+shuffleBtn.addEventListener('click', assign);
+
+const pickerOrders = [[], []];
+const pickedCounts = [0, 0];
+const pickerRoots = [...document.querySelectorAll('.picker')];
+
+function setupPicker(root, pickerIndex) {
+  const listEl = root.querySelector('.group-list');
+  const pickedEl = root.querySelector('.picked-text');
+  const pickBtn = root.querySelector('.pick');
+  for (let i = 1; i <= GROUP_COUNT; i++) {
+    const li = document.createElement('li');
+    li.textContent = `Group ${i}`;
+    li.dataset.group = String(i);
+    listEl.appendChild(li);
+  }
+
+  pickBtn.addEventListener('click', () => {
+    const group = pickerOrders[pickerIndex][pickedCounts[pickerIndex]];
+    if (group === undefined) return;
+    const li = listEl.querySelector(`[data-group="${group}"]`);
+    listEl.querySelectorAll('.current').forEach(el => el.classList.remove('current'));
+    li.classList.add('used', 'current');
+    pickedCounts[pickerIndex]++;
+    pickedEl.textContent = `Selected: ${li.textContent}`;
+    if (pickedCounts[pickerIndex] === GROUP_COUNT) {
+      pickBtn.disabled = true;
+      pickedEl.textContent += ' (all groups have been chosen)';
+    }
+  });
+}
+
+pickerRoots.forEach(setupPicker);
+
+function resetPickerAssignments() {
+  const presentationOrder = shuffle(Array.from({ length: GROUP_COUNT }, (_, i) => i + 1));
+  let auditOrder;
+  do {
+    auditOrder = shuffle(presentationOrder);
+  } while (auditOrder.some((group, i) => group === presentationOrder[i]));
+
+  pickerOrders[0] = presentationOrder;
+  pickerOrders[1] = auditOrder;
+  pickedCounts.fill(0);
+  pickerRoots.forEach(root => {
+    root.querySelectorAll('.group-list li').forEach(li => li.classList.remove('used', 'current'));
+    root.querySelector('.picked-text').textContent = '';
+    root.querySelector('.pick').disabled = false;
+  });
+}
+
+document.getElementById('reset-picks').addEventListener('click', resetPickerAssignments);
+resetPickerAssignments();
+
+(function setupTimer() {
+  const display = document.getElementById('timer');
+  const section = document.getElementById('timer-section');
+  const startBtn = document.getElementById('t-start');
+  const presets = document.querySelectorAll('.preset');
+  let totalSec = 600;
+  let remaining = totalSec;
+  let endTime = 0;
+  let handle = null;
+
+  function show() {
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    display.textContent = `${m}:${s}`;
+    display.classList.toggle('done', remaining === 0);
+    display.classList.toggle('warning', remaining <= 60);
+  }
+
+  function stop() {
+    clearInterval(handle);
+    handle = null;
+    section.classList.remove('running');
+  }
+
+  function tick() {
+    remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    show();
+    if (remaining === 0) stop();
+  }
+
+  function start() {
+    if (handle || remaining === 0) return;
+    endTime = Date.now() + remaining * 1000;
+    handle = setInterval(tick, 250);
+    section.classList.add('running');
+  }
+
+  function reset() {
+    stop();
+    remaining = totalSec;
+    show();
+  }
+
+  function setPreset(btn) {
+    totalSec = Number(btn.dataset.min) * 60;
+    presets.forEach(b => b.classList.toggle('active', b === btn));
+    reset();
+  }
+
+  presets.forEach(b => b.addEventListener('click', () => setPreset(b)));
+  presets[0].classList.add('active');
+  startBtn.addEventListener('click', start);
+  document.getElementById('t-stop').addEventListener('click', stop);
+  document.getElementById('t-reset').addEventListener('click', reset);
+  const fullBtn = document.getElementById('t-full');
+  fullBtn.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else section.requestFullscreen();
+  });
+  document.addEventListener('fullscreenchange', () => {
+    fullBtn.textContent = document.fullscreenElement === section ? 'Exit full screen' : 'Full screen';
+  });
+  show();
+})();
+
+downloadBtn.addEventListener('click', () => {
+  const out = groups.map((g, i) => `Group ${i + 1}\n${g.map(n => '  ' + n).join('\n')}`).join('\n\n');
+  const url = URL.createObjectURL(new Blob([out], { type: 'text/plain;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'debate-groups.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
